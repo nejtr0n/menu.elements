@@ -4,7 +4,7 @@
    "description":"Make menu for site map from iblock elements",
    "license": "MIT",
    "extra": {
-      "bx_component_name": "kokoc:menu.elements1"
+      "bx_component_name": "kokoc:menu.elements"
    },
    "require":{
       "php":">=5.3.0",
