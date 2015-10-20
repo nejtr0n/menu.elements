@@ -9,5 +9,6 @@
    "require":{
       "php":">=5.3.0",
       "nejtr0n/bx-component-installer-plugin": "*"
-   }
+   },
+   "minimum-stability": "dev"
 }
