@@ -8,6 +8,6 @@
    },
    "require":{
       "php":">=5.3.0",
-      "nejtr0n/bx-component-installer-plugin": "dev-master"
+      "nejtr0n//bx-component-installer-plugin": "dev-master"
    }
 }
