@@ -17,6 +17,7 @@ if(!isset($arParams["CACHE_TIME"]))
 $arParams["ID"] = intval($arParams["ID"]);
 $arParams["IBLOCK_ID"] = intval($arParams["IBLOCK_ID"]);
 $arParams["LIMIT"] = (intval($arParams["LIMIT"]) > 0) ? intval($arParams["LIMIT"]) : 10;
+$arParams["EXTRA"] = (empty($arParams["EXTRA"]) || !is_array($arParams["EXTRA"])) ? array() : $arParams["EXTRA"];
 
 $arResult["ITEMS"] = array();
 $arResult["ELEMENT_LINKS"] = array();
@@ -31,30 +32,28 @@ if($this->StartResultCache())
 			"IBLOCK_ID"=>$arParams["IBLOCK_ID"],
 			"GLOBAL_ACTIVE"=>"Y",
 			"IBLOCK_ACTIVE"=>"Y",
-			"IBLOCK_SECTION_ID" => (!empty($arParams["ID"])) ? $arParams["ID"] : false,
+			"IBLOCK_SECTION_ID" => (!empty($arParams["ID"])) ? $arParams["ID"] : false, // Subsection filter
 		);
 		$arOrder = array(
 			"sort"=>"asc",
 		);
 		$arSelect = array (
 			"ID",
-			"NAME"
+			"NAME",
+			"DETAIL_PAGE_URL"
 		);
 		$rsElements = CIBlockElement::GetList($arOrder, $arFilter, false, Array("nPageSize"=>50), $arSelect);
 
 		if($arParams["IS_SEF"] !== "Y")
 			$rsElements->SetUrlTemplates("", $arParams["SECTION_URL"]);
 		else
-			$rsElements->SetUrlTemplates("", $arParams["SEF_BASE_URL"].$arParams["SECTION_PAGE_URL"]);
-		while($arElement = $rsElements->GetNext())
-		{
-			var_dump($arElement);
+			$rsElements->SetUrlTemplates($arParams["SEF_BASE_URL"].$arParams["DETAIL_PAGE_URL"], $arParams["SEF_BASE_URL"].$arParams["SECTION_PAGE_URL"]);
 
-			$arResult["SECTIONS"][] = array(
+		while($arElement = $rsElements->GetNext()) {
+			$arResult["ELEMENTS"][] = array(
 				"ID" => $arElement["ID"],
-				"DEPTH_LEVEL" => $arElement["DEPTH_LEVEL"],
 				"~NAME" => $arElement["~NAME"],
-				"~SECTION_PAGE_URL" => $arElement["~SECTION_PAGE_URL"],
+				"~DETAIL_PAGE_URL" => $arElement["~DETAIL_PAGE_URL"],
 			);
 			$arResult["ELEMENT_LINKS"][$arElement["ID"]] = array();
 		}
@@ -62,77 +61,26 @@ if($this->StartResultCache())
 	}
 }
 
-//In "SEF" mode we'll try to parse URL and get ELEMENT_ID from it
-if($arParams["IS_SEF"] === "Y")
-{
-	$engine = new CComponentEngine($this);
-	if (CModule::IncludeModule('iblock'))
-	{
-		$engine->addGreedyPart("#SECTION_CODE_PATH#");
-		$engine->setResolveCallback(array("CIBlockFindTools", "resolveComponentEngine"));
-	}
-	$componentPage = $engine->guessComponentPath(
-		$arParams["SEF_BASE_URL"],
-		array(
-			"section" => $arParams["SECTION_PAGE_URL"],
-			"detail" => $arParams["DETAIL_PAGE_URL"],
-		),
-		$arVariables
-	);
-	if($componentPage === "detail")
-	{
-		CComponentEngine::InitComponentVariables(
-			$componentPage,
-			array("SECTION_ID", "ELEMENT_ID"),
-			array(
-				"section" => array("SECTION_ID" => "SECTION_ID"),
-				"detail" => array("SECTION_ID" => "SECTION_ID", "ELEMENT_ID" => "ELEMENT_ID"),
-			),
-			$arVariables
-		);
-		$arParams["ID"] = intval($arVariables["ELEMENT_ID"]);
-	}
-}
 
-if(($arParams["ID"] > 0) && (intval($arVariables["SECTION_ID"]) <= 0) && CModule::IncludeModule("iblock"))
-{
-	$arSelect = array("ID", "IBLOCK_ID", "DETAIL_PAGE_URL", "IBLOCK_SECTION_ID");
-	$arFilter = array(
-		"ID" => $arParams["ID"],
-		"ACTIVE" => "Y",
-		"IBLOCK_ID" => $arParams["IBLOCK_ID"],
-	);
-	$rsElements = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
-	if(($arParams["IS_SEF"] === "Y") && (strlen($arParams["DETAIL_PAGE_URL"]) > 0))
-		$rsElements->SetUrlTemplates($arParams["SEF_BASE_URL"].$arParams["DETAIL_PAGE_URL"]);
-	while($arElement = $rsElements->GetNext())
-	{
-		$arResult["ELEMENT_LINKS"][$arElement["IBLOCK_SECTION_ID"]][] = $arElement["~DETAIL_PAGE_URL"];
-	}
-}
 
 // Return results
 $aMenuLinksNew = array();
 $menuIndex = 0;
 $previousDepthLevel = 1;
-foreach($arResult["SECTIONS"] as $arSection)
-{
-	if ($menuIndex > 0)
-		$aMenuLinksNew[$menuIndex - 1][3]["IS_PARENT"] = $arSection["DEPTH_LEVEL"] > $previousDepthLevel;
-	$previousDepthLevel = $arSection["DEPTH_LEVEL"];
+foreach($arResult["ELEMENTS"] as $arElement) {
+	$data = array(
+		"FROM_IBLOCK" => true,
+		"IS_PARENT" => false,
+		"DEPTH_LEVEL" => $previousDepthLevel,
+	);
+	$arResult["ELEMENT_LINKS"][$arElement["ID"]][] = urldecode($arElement["~DETAIL_PAGE_URL"]);
 
-	$arResult["ELEMENT_LINKS"][$arSection["ID"]][] = urldecode($arSection["~SECTION_PAGE_URL"]);
 	$aMenuLinksNew[$menuIndex++] = array(
-		htmlspecialcharsbx($arSection["~NAME"]),
-		$arSection["~SECTION_PAGE_URL"],
-		$arResult["ELEMENT_LINKS"][$arSection["ID"]],
-		array(
-			"FROM_IBLOCK" => true,
-			"IS_PARENT" => false,
-			"DEPTH_LEVEL" => $arSection["DEPTH_LEVEL"],
-		),
+		htmlspecialcharsbx($arElement["~NAME"]),
+		$arElement["~DETAIL_PAGE_URL"],
+		$arResult["ELEMENT_LINKS"][$arElement["ID"]],
+		(empty($arParams["EXTRA"])) ? $data : array_merge($arParams["EXTRA"], $data),
+
 	);
 }
-
 return $aMenuLinksNew;
-?>

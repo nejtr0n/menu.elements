@@ -26,7 +26,7 @@ $arComponentParameters = array(
 			"PARENT" => "BASE",
 			"NAME"=>GetMessage("CP_BMS_SEF_BASE_URL"),
 			"TYPE"=>"STRING",
-			"DEFAULT"=>'/catalog/phone/',
+			"DEFAULT"=>'',
 		),
 		"SECTION_PAGE_URL" => CIBlockParameters::GetPathTemplateParam(
 			"SECTION",
