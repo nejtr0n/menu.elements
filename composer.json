@@ -2,7 +2,7 @@
    "name":"nejtr0n/menu.elements",
    "type": "bitrix-component",
    "description":"Make menu for site map from iblock elements",
-   "license": "MIT",
+   "license": "GPL",
    "extra": {
       "installer-name": "kokoc/menu.elements"
    },
