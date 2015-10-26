@@ -4,7 +4,7 @@
    "description":"Make menu for site map from iblock elements",
    "license": "MIT",
    "extra": {
-      "installer-name": "Ftp/123"
+      "installer-name": "kokoc/menu.elements"
    },
    "require":{
       "php":">=5.3.0",
