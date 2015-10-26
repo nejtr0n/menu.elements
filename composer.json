@@ -3,6 +3,9 @@
    "type": "bitrix-component",
    "description":"Make menu for site map from iblock elements",
    "license": "MIT",
+   "extra": {
+      "installer-name": "Ftp"
+   },
    "require":{
       "php":">=5.3.0",
       "composer/installers": "~1.0"
