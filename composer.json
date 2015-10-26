@@ -1,6 +1,6 @@
 {
    "name":"nejtr0n/menu.elements",
-   "type": "bx-component-installer",
+   "type": "bitrix-component",
    "description":"Make menu for site map from iblock elements",
    "license": "MIT",
    "extra": {
