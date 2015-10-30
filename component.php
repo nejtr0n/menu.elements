@@ -32,6 +32,7 @@ if($this->StartResultCache())
 			"IBLOCK_ID"=>$arParams["IBLOCK_ID"],
 			"GLOBAL_ACTIVE"=>"Y",
 			"IBLOCK_ACTIVE"=>"Y",
+			"ACTIVE" => "Y",
 			"IBLOCK_SECTION_ID" => (!empty($arParams["ID"])) ? $arParams["ID"] : false, // Subsection filter
 		);
 		$arOrder = array(
